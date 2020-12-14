@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
+using System.Collections;
 
 namespace DependencyInjectionContainer
 {
@@ -18,8 +19,22 @@ namespace DependencyInjectionContainer
             _config = depConfig.Config;
         }
 
-        private object Resolve(Type tDependency) 
+        private object Resolve(Type tDependency, int implNumber = 0)
         {
+            if (typeof(IEnumerable).IsAssignableFrom(tDependency))
+            {
+                var actual = tDependency.GetGenericArguments().First();
+                int implCount = _config[tDependency].Count;
+
+                var container = Array.CreateInstance(actual, implCount);
+
+                for (int i = 0; i < implCount; i++)
+                {
+                    container.SetValue(Resolve(actual, i), i);
+                }
+                return container;
+            }
+
             var constructor = tDependency.GetConstructors(BindingFlags.Public | BindingFlags.Instance).First();
             var parametrs = constructor.GetParameters();
 
