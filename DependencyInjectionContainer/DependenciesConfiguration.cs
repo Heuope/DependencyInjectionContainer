@@ -9,7 +9,7 @@ namespace DependencyInjectionContainer
     {
         public enum Lifetime { Instance, Singleton }
 
-        internal Dictionary<Type, List<Type>> RegisterCofig = new Dictionary<Type, List<Type>>();
+        internal Dictionary<Type, List<ImplConfig>> Config = new Dictionary<Type, List<ImplConfig>>();
 
         private void Register(Type tDependency, Type tImplementation, Lifetime lifetime)
         {
@@ -19,15 +19,15 @@ namespace DependencyInjectionContainer
                 return;
             if (!tImplementation.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Any())
                 return;
-            if (!RegisterCofig.ContainsKey(tDependency))
+            if (!Config.ContainsKey(tDependency))
             {
-                RegisterCofig.Add(tDependency, new List<Type>());
+                Config.Add(tDependency, new List<ImplConfig>());
             }
 
-            if (RegisterCofig[tDependency].Contains(tImplementation))
+            if (Config[tDependency].Contains(new ImplConfig(tImplementation, lifetime)))
                 return;
             else
-                RegisterCofig[tDependency].Add(tImplementation);
+                Config[tDependency].Add(new ImplConfig(tImplementation, lifetime));
         }
 
         public void Register<TDependency, TImplementation>(Lifetime lifetime = Lifetime.Instance) where TDependency : class where TImplementation : TDependency
