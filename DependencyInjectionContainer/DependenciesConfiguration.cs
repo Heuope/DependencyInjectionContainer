@@ -14,18 +14,18 @@ namespace DependencyInjectionContainer
         public void Register(Type tDependency, Type tImplementation, Lifetime lifetime = Lifetime.Instance)
         {
             if (tImplementation.IsAbstract)
-                return;
+                throw new ArgumentException("TImplementation cannot be abstract");
             if (!tDependency.IsAssignableFrom(tImplementation) && !tDependency.IsGenericTypeDefinition)
-                return;
+                throw new ArgumentException("TImplementation doesn't implemented TDependency interface");
             if (!tImplementation.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Any())
-                return;
+                throw new ArgumentException("TImplementation doesn't have any public constructors"); ;
             if (!Config.ContainsKey(tDependency))
             {
                 Config.Add(tDependency, new List<ImplConfig>());
             }
 
             if (Config[tDependency].Contains(new ImplConfig(tImplementation, lifetime)))
-                return;
+                throw new ArgumentException("Such dependency is already registred");
             else
                 Config[tDependency].Add(new ImplConfig(tImplementation, lifetime));
         }

@@ -93,7 +93,7 @@ namespace DependencyInjectionContainer
             }
             catch (Exception)
             {
-                throw new ArgumentException("");
+                throw new ArgumentException($"{targetType.Name} constructor threw an exception");
             }
         }
 
