@@ -8,7 +8,7 @@ namespace DependencyInjectionContainer
     {
         public DependenciesConfiguration.Lifetime Lifetime { get; }
 
-        public Type implType { get; } 
+        public Type implType { get; }
 
         public ImplConfig(Type type, DependenciesConfiguration.Lifetime lifetime)
         {

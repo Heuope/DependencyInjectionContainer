@@ -35,12 +35,40 @@ namespace DependencyInjectionContainer
                 return container;
             }
 
+            var isGenericDependency = tDependency.GetGenericArguments().Length == 0 ? false : true;
+            var isOpenGenericDependency = false;
+
+            ImplConfig implConfig = _config[tDependency][implNumber];
+
+            if (isGenericDependency)
+            {
+                var t = tDependency.GetGenericTypeDefinition();
+                if (_config.ContainsKey(t))
+                {
+                    implConfig = _config[t].First();
+                    isOpenGenericDependency = true;
+                }
+                else
+                {
+                    implConfig = _config[tDependency].First();
+                }
+            }
+
+            var targetType = implConfig.implType;
+            if (isOpenGenericDependency)
+            {
+                targetType = targetType.MakeGenericType(tDependency.GetGenericArguments().First());
+            }
+
+            if (_instances.ContainsKey(targetType))
+            {
+                return _instances[targetType];
+            }
+
             var constructor = tDependency.GetConstructors(BindingFlags.Public | BindingFlags.Instance).First();
             var parametrs = constructor.GetParameters();
 
             var constrParams = new List<object>();
-
-            var impConfig = _config[tDependency];
 
             foreach (var parameter in parametrs)
             {
@@ -58,6 +86,10 @@ namespace DependencyInjectionContainer
             {
                 object result = constructor.Invoke(constrParams.ToArray());
 
+                if (implConfig.Lifetime == DependenciesConfiguration.Lifetime.Singleton)
+                {
+                    return _instances.TryAdd(targetType, result) ? result : _instances[targetType];
+                }
                 return result;
             }
             catch (Exception)
