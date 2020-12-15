@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace DependencyInjectionContainer
 {
-    class DependencyProvider
+    public class DependencyProvider
     {
         private Dictionary<Type, List<ImplConfig>> _config { get; }
 
@@ -24,7 +24,7 @@ namespace DependencyInjectionContainer
             if (typeof(IEnumerable).IsAssignableFrom(tDependency))
             {
                 var actual = tDependency.GetGenericArguments().First();
-                int implCount = _config[tDependency].Count;
+                int implCount = _config[actual].Count;
 
                 var container = Array.CreateInstance(actual, implCount);
 
@@ -38,7 +38,7 @@ namespace DependencyInjectionContainer
             var isGenericDependency = tDependency.GetGenericArguments().Length == 0 ? false : true;
             var isOpenGenericDependency = false;
 
-            ImplConfig implConfig = _config[tDependency][implNumber];
+            ImplConfig implConfig;
 
             if (isGenericDependency)
             {
@@ -53,6 +53,10 @@ namespace DependencyInjectionContainer
                     implConfig = _config[tDependency].First();
                 }
             }
+            else
+            {
+                implConfig = _config[tDependency][implNumber];
+            }
 
             var targetType = implConfig.implType;
             if (isOpenGenericDependency)
@@ -60,12 +64,7 @@ namespace DependencyInjectionContainer
                 targetType = targetType.MakeGenericType(tDependency.GetGenericArguments().First());
             }
 
-            if (_instances.ContainsKey(targetType))
-            {
-                return _instances[targetType];
-            }
-
-            var constructor = tDependency.GetConstructors(BindingFlags.Public | BindingFlags.Instance).First();
+            var constructor = targetType.GetConstructors(BindingFlags.Public | BindingFlags.Instance).First();
             var parametrs = constructor.GetParameters();
 
             var constrParams = new List<object>();
@@ -98,9 +97,9 @@ namespace DependencyInjectionContainer
             }
         }
 
-        public TDependency Resolve<TDependency>() 
+        public TDependency Resolve<TDependency>(int implNumber = 0) 
         {
-            return (TDependency)Resolve(typeof(TDependency));
+            return (TDependency)Resolve(typeof(TDependency), implNumber);
         }
     }
 }

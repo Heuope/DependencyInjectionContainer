@@ -11,11 +11,11 @@ namespace DependencyInjectionContainer
 
         internal Dictionary<Type, List<ImplConfig>> Config = new Dictionary<Type, List<ImplConfig>>();
 
-        private void Register(Type tDependency, Type tImplementation, Lifetime lifetime)
+        public void Register(Type tDependency, Type tImplementation, Lifetime lifetime = Lifetime.Instance)
         {
             if (tImplementation.IsAbstract)
                 return;
-            if (tDependency.IsAssignableFrom(tImplementation))
+            if (!tDependency.IsAssignableFrom(tImplementation) && !tDependency.IsGenericTypeDefinition)
                 return;
             if (!tImplementation.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Any())
                 return;
